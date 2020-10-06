@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import {
@@ -9,13 +9,16 @@ import {
 	Card,
 	Button,
 	ListGroupItem,
+	Form,
 } from 'react-bootstrap';
 import Rating from '../components/Rating';
 import { listProductDetails } from '../actions/productActions';
 import Loader from '../components/Loader';
 import Message from '../components/Message';
 
-const ProductScreen = ({ match }) => {
+const ProductScreen = ({ match, history }) => {
+	const [qty, setQty] = useState(0);
+
 	const dispatch = useDispatch();
 	const productDetails = useSelector((state) => state.productDetails);
 	const { loading, error, product } = productDetails;
@@ -23,6 +26,10 @@ const ProductScreen = ({ match }) => {
 	useEffect(() => {
 		dispatch(listProductDetails(match.params.id));
 	}, [dispatch, match]);
+
+	const addToCartHandler = () => {
+		history.push(`/cart/${match.params.id}?qty=${qty}`);
+	};
 
 	return (
 		<>
@@ -78,8 +85,38 @@ const ProductScreen = ({ match }) => {
 										</Col>
 									</Row>
 								</ListGroupItem>
+								{product.countInStock > 0 && (
+									<ListGroupItem>
+										<Row>
+											<Col>Qty</Col>
+											<Col>
+												<Form.Control
+													as="select"
+													value={qty}
+													onChange={(e) =>
+														setQty(e.target.value)
+													}
+												>
+													{[
+														...Array(
+															product.countInStock
+														).keys(),
+													].map((x) => (
+														<option
+															key={x + 1}
+															value={x + 1}
+														>
+															{x + 1}
+														</option>
+													))}
+												</Form.Control>
+											</Col>
+										</Row>
+									</ListGroupItem>
+								)}
 								<ListGroupItem>
 									<Button
+										onClick={addToCartHandler}
 										className="btn-block"
 										type="button"
 										disabled={
